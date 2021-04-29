@@ -19,6 +19,7 @@ class Bola (): #convenio, self es class, la propia instancia
         self.vx = vx
         self.vy = vy
         self.color = color
+        
 
     def rebotaX(x):
         if x <=0 or x >=ANCHO:
@@ -32,13 +33,18 @@ class Bola (): #convenio, self es class, la propia instancia
 #CREAR UN METODO 
 bolas = []
 
-nuevoRangos = [()]
+def aleatorio():
+    ix = randint(1,2)
+    if ix == 1:
+        return randint(5,10)
+    else:
+        return randint(-10,-5) #-10 es menor que el -5
 
 for _ in range(10):
     bola = Bola(randint(0, ANCHO),
             randint(0, ALTO),
-            randint(5, 10),
-            randint(5, 10),
+            aleatorio(),
+            aleatorio(),
             (randint(0, 255), randint(0,255), randint(0,255)))
 
     bolas.append(bola)
