@@ -1,6 +1,7 @@
 import pygame as pg
 import sys
 from random import randint, choice
+
 ROJO = (255, 0, 0)
 AZUL = (0, 0, 255)
 VERDE = (0, 255, 0)
@@ -10,6 +11,7 @@ ALTO = 600
 pg.init()
 pantalla = pg.display.set_mode((ANCHO, ALTO))
 reloj = pg.time.Clock()
+
 class Bola():
     def __init__(self, x, y, vx=5, vy=5, color= (255, 255, 255), radio=10):
         self.x = x
@@ -41,8 +43,12 @@ class Bola():
            self.x+self.anchura >= objeto.x and self.x+self.anchura <= objeto.x + objeto.anchura
         choqueY = self.y >= objeto.y and self.y <= objeto.y+objeto.altura or \
            self.y+self.altura >= objeto.y and self.y+self.altura <= objeto.y + objeto.altura
+        
         if choqueX and choqueY:  #True si hay colision en x e y y hace eso
             self.vy *= -1 #cambiamos el sentido
+            return True
+        
+        return False
 class Raqueta():
     def __init__(self, x=0, y=0):
         self.altura = 10
@@ -62,32 +68,63 @@ class Raqueta():
             self.x -= self.vx
         if teclas_pulsadas[pg.K_RIGHT] and self.x < ANCHO - self.anchura:
             self.x += self.vx
+
+
 vidas = 3
+puntuacion = 0
 bola = Bola(randint(0, ANCHO),
             randint(0, ALTO),
             randint(5, 10)*choice([-1, 1]),
             randint(5, 10)*choice([-1, 1]),
             AZUL)
+
 raqueta = Raqueta()
+
+#inicializo todo lo que quiero meter en el bucle
+txtGameOver = pg.font.SysFont("Arial", 35)
+txtPuntuacion = pg.font.SysFont("Courier", 28)
+pierdebola = False
 game_over = False
+
 while not game_over and vidas > 0:
     v = reloj.tick(60)
+    if pierdebola: #para ponerlo detras del flip, no será verdadero hasta que no se haya cerrado el bucle
+        pg.time.delay(500)
+
+
     #Gestion de eventos
     for evento in pg.event.get():
         if evento.type == pg.QUIT:
             game_over = True
+
     # Modificación de estado
     raqueta.actualizar()
-    pierdebola = bola.actualizar()
-    if pierdebola:
+    pierdebola = bola.actualizar() #compruebo si toca el fondo
+    pantalla.fill(NEGRO) #limpio pantalla
+
+    if pierdebola: #gestión de estados
         vidas -= 1
-    bola.comprueba_colision(raqueta)
-    # Gestión de la pantalla
-    pantalla.fill(NEGRO)
-    bola.dibujar(pantalla)
-    raqueta.dibujar(pantalla)
+        #resetear la bola. Se juega con 
+        if vidas == 0:
+            texto = txtGameOver.render("GAME_OVER", True, (0, 255, 255)) #me devuelve un surface
+            pantalla.blit(texto, (400,300))       
+        else:
+            bola.x = 400
+            bola.y = 300  
+            bola.dibujar(pantalla)
+            raqueta.dibujar(pantalla)  
+    else:
+        if bola.comprueba_colision(raqueta):
+            puntuacion += 5
+
+        # Gestión de la pantalla
+        texto = txtPuntuacion.render(str(puntuacion), True, (255,255,0))
+        pantalla.blit(texto, (20, 20))
+        bola.dibujar(pantalla)
+        raqueta.dibujar(pantalla)
+    
     pg.display.flip()
-    if pierdebola:
-        pg.time.delay(500)
+  
+pg.time.delay(1000)
 pg.quit()
 sys.exit()
